@@ -232,5 +232,5 @@ if st.button("Predict case"):
     probability = model.predict_proba(processed_data)[0][1]
 
     st.subheader("Result")
-    st.metric("Survival Probability", f"{probability:.1%}")
-    st.write(f"Prediction {'Survived' if prediction == 1 else 'Did not survive'}")
+    st.metric("Probability", f"{probability:.1%}")
+    st.write(f"he is {'ill' if prediction == 1 else 'well'}")
