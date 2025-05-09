@@ -1,4 +1,5 @@
 
+
 import streamlit as st
 import joblib
 import pandas as pd
@@ -7,14 +8,31 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from scipy.stats import gaussian_kde
 # Cache the data loading and figure creation for performance
-@st.cache_data
-def load_data_and_create_figure():
+
+import plotly.express as px  # لازم تستدعي px هنا عشان ألوان الباي
     # Load the Titanic dataset
-    df = pd.read_csv('full_data_used.csv')
+df = pd.read_csv('full_data_used.csv')
+
+# Load pre-trained model and preprocessor
+model = joblib.load("model.pkl")
+preprocessor = joblib.load("preprocessor.pkl")
+
+st.title('Heart Disease Predictor')
+
+st.subheader('EDA')
+
+
+
+
+
+
+
+
+
 
 
 fig = make_subplots(  rows=3, cols=2,
-    specs=[
+        specs=[
         [{"type": "xy"}, {"type": "xy"}],
         [{"type": "xy"}, {"type": "domain"}],
         [{"type": "xy"}, {"type": "xy"}]
@@ -61,7 +79,7 @@ kde = gaussian_kde(age)
 x = np.linspace(age.min(), age.max(), 12)
 kde_values = kde(x)
 fig.add_trace(
-    go.Histogram(x=age, 
+go.Histogram(x=age, 
                 nbinsx=20, 
                 histnorm='probability density', 
                 name='AgeCategory', 
@@ -101,7 +119,7 @@ fig.add_trace(
     ),
     row=2, col=1
 )
-physicall=full_data['PhysicalActivity'].value_counts()
+physicall=df['PhysicalActivity'].value_counts()
 fig.add_trace(
     go.Pie(
     labels=physicall.index.tolist(),  # Gets unique categories in order
@@ -112,12 +130,12 @@ fig.add_trace(
     hole=0.3,  # Optional: makes it a donut chart (remove if you want regular pie)
     pull=[0.1, 0, 0, 0]  # Optional: pulls out the first slice
 ),
-row=2 ,col=2)
+    row=2 ,col=2)
 numerical_cols = df.select_dtypes(include=['int64', 'float64']).columns
 corr_matrix = df[numerical_cols].corr()
 fig.add_trace(
    
-    go.Heatmap(
+go.Heatmap(
         z=corr_matrix.values, 
         x=corr_matrix.columns, 
         y=corr_matrix.columns, 
@@ -131,18 +149,18 @@ fig.add_trace(
             yanchor='middle'  # Center the colorbar vertically within the subplot
         )
     )
-,row=3 ,col=1)
+    ,row=3 ,col=1)
 
 
 
-grouped = df.groupby(['Smoking', 'HeartDisease']).size().unstack(fill_value=0)
+df.grouped = df.groupby(['Smoking', 'HeartDisease']).size().unstack(fill_value=0)
 
 
 fig.add_trace(
     go.Bar(
         name='Sick = 1',
-        x=grouped.index,
-        y=grouped[1],
+        x=df.grouped.index,
+        y=df.grouped[1],
         marker_color='red'
     ),    row=3, col=2
 )
@@ -150,8 +168,8 @@ fig.add_trace(
 fig.add_trace(
     go.Bar(
         name='Sick = 0',
-        x=grouped.index,
-        y=grouped[0],
+        x=df.grouped.index,
+        y=df.grouped[0],
         marker_color='blue'
     ),    row=3, col=2
 
@@ -164,11 +182,9 @@ fig.update_layout(
     title_x=0.5,  # Center the title
     showlegend=True,
     barmode='group'  # Group the bars for Survival Distribution
-),
+)
 
-return full_data, fig
-
-df, fig = load_data_and_create_figure()
+# st.pyplot(fig)
 
 st.title('Heart Disease Predictor')
 
@@ -185,7 +201,7 @@ st.subheader("Model Prediction")
 # Input widgets
 col1, col2 = st.columns(2)
 with col1:
-    BMI = st.number_input("BMI", min_value=12, max_value=87, value=30,step=0.5)
+    BMI = st.number_input("BMI", value=0.0, format="%.2f")
     Smoking = st.selectbox("Smoking", [0,1])
     AlcoholDrinking = st.selectbox("AlcoholDrinking", [0,1])
     Stroke = st.selectbox("Stroke", [0,1])
@@ -213,9 +229,9 @@ if st.button("Predict case"):
                                 columns=['BMI', 'Smoking', 'AlcoholDrinking','Stroke','PhysicalHealth','MentalHealth','DiffWalking','Sex','AgeCategory',
                                    'Race',	'Diabetic',	'PhysicalActivity',	'GenHealth',	'SleepTime',	'Asthma',	'KidneyDisease',	'SkinCancer'])
 
- processed_data = preprocessor11.transform(input_data)
-    prediction = xgb.predict(processed_data)[0]
-    probability = xgb.predict_proba(processed_data)[0][1]
+    processed_data = preprocessor.transform(input_data)
+    prediction = model.predict(processed_data)[0]
+    probability = model.predict_proba(processed_data)[0][1]
 
     st.subheader("Result")
     st.metric("Survival Probability", f"{probability:.1%}")
