@@ -9,9 +9,10 @@ from plotly.subplots import make_subplots
 from scipy.stats import gaussian_kde
 # Cache the data loading and figure creation for performance
 
-import plotly.express as px  # لازم تستدعي px هنا عشان ألوان الباي
+import plotly.express as px  
     # Load the Titanic dataset
 df = pd.read_csv('full_data_used.csv')
+df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
 # Load pre-trained model and preprocessor
 model = joblib.load("model.pkl")
@@ -186,9 +187,6 @@ fig.update_layout(
 
 # st.pyplot(fig)
 
-st.title('Heart Disease Predictor')
-
-st.subheader('EDA')
 st.plotly_chart(fig, use_container_width=False)
 
 # Load pre-trained model and preprocessor
