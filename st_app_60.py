@@ -9,10 +9,9 @@ from plotly.subplots import make_subplots
 from scipy.stats import gaussian_kde
 # Cache the data loading and figure creation for performance
 
-import plotly.express as px  
+import plotly.express as px  # لازم تستدعي px هنا عشان ألوان الباي
     # Load the Titanic dataset
 df = pd.read_csv('full_data_used.csv')
-df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 
 # Load pre-trained model and preprocessor
 model = joblib.load("model.pkl")
@@ -135,7 +134,7 @@ fig.add_trace(
 numerical_cols = df.select_dtypes(include=['int64', 'float64']).columns
 corr_matrix = df[numerical_cols].corr()
 fig.add_trace(
-   
+
 go.Heatmap(
         z=corr_matrix.values, 
         x=corr_matrix.columns, 
@@ -211,7 +210,7 @@ with col1:
 
 with col2:
     AgeCategory = st.number_input("AgeCategory", min_value=0, max_value=12, value=10)
-    Race = st.selectbox("Race", [0,1])
+    Race = st.selectbox("Race", [0,1,2,3,4,5])
     Diabetic = st.selectbox("Diabetic", [0,1])
     PhysicalActivity = st.selectbox("PhysicalActivity", [0,1])
     GenHealth = st.number_input("GenHealth", min_value=0, max_value=4, value=2)
